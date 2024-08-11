@@ -13,7 +13,6 @@ import Task from './Task.vue'
 defineProps({
     tasks: {
         type: Array,
-        required: true,
     },
     show: {
         type: Boolean,
