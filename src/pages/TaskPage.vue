@@ -4,13 +4,10 @@
             <div class="row">
                 <div class="col-md-8 offset-md-2">
                     <!-- Add new Task -->
-                    <NewTask @added="handleAddedTask" />
+                    <NewTask  />
                     <Tasks :tasks="uncompletedTasks" 
-                    @updated="handleUpdatedTask " 
-                    @completed="handleCompletedTask"
-                    @removed="handleRemovedTask"
+                    
                     />
-
                     <div class="text-center my-3" v-show="showToggleCompletedBtn">
                         <button class="btn btn-sm btn-secondary" 
                             @click="showCompletedTasks = !showCompletedTasks">
@@ -20,8 +17,7 @@
                     </div>
 
                     <Tasks :tasks="completedTasks" v-if="shouldShowCompletedTasks" 
-                        @completed="handleCompletedTask"
-                        @removed="handleRemovedTask"
+                     
                     />
                 </div>
             </div>
@@ -31,19 +27,23 @@
 
 <script setup>
 import { computed, onMounted, ref } from "vue";
-import { allTasks,createTask,updateTask,completeTask,deleteTask } from "../http/task-api";
+import { useTaskStore } from "@/stores/task";
+import { storeToRefs } from "pinia";
 import NewTask from "@/components/tasks/NewTask.vue";
 import Tasks from "../components/tasks/Tasks.vue";
 
 const tasks = ref([]);
-
+const store =useTaskStore();
+const {completedTasks,uncompletedTasks} =storeToRefs(store)
+const {fetchAllTasks} = store
 onMounted(async () => {
-    const { data } = await allTasks();
-    tasks.value = data.data;
+    await fetchAllTasks()
+    
+    
 });
 
-const uncompletedTasks = computed(() => tasks.value.filter(task => !task.is_completed));
-const completedTasks = computed(() => tasks.value.filter(task => task.is_completed));
+// const uncompletedTasks = computed(() => tasks.value.filter(task => !task.is_completed));
+// const completedTasks = computed(() => tasks.value.filter(task => task.is_completed));
 
 const showToggleCompletedBtn = computed(() => 
     uncompletedTasks.value.length > 0 && completedTasks.value.length > 0
@@ -55,11 +55,7 @@ const shouldShowCompletedTasks = computed(() =>
 
 const showCompletedTasks = ref(false);
 
-const handleAddedTask = async(task) => {
-    const {data : createdTask} = await createTask(task);
 
-    tasks.value.unshift(createdTask.data);
-};
 
 const handleUpdatedTask  = async (task) => {
     
@@ -69,7 +65,9 @@ const handleUpdatedTask  = async (task) => {
     });
 
     const currentTask = tasks.value.find(item => item.id ===task.id);
-    currentTask.name = updatedTask.data.name;
+    console.log(currentTask);
+    
+    // currentTask.name = updatedTask.data.name;
 }
 const handleCompletedTask =async (task) =>{
     
