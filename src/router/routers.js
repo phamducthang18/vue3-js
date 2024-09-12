@@ -4,6 +4,7 @@ import RegisterPage from "@/pages/RegisterPage.vue";
 import SummaryPage from "@/pages/SummaryPage.vue";
 import NotFounfErrorPage from "@/pages/errrors/NotFounfErrorPage.vue";
 import HomePage from "@/pages/HomePage.vue";
+import Chat from "@/components/Chat.vue";
 
 const routes =[
     {
@@ -32,11 +33,23 @@ const routes =[
         path: '/login',
         name: 'login',
         component: LoginPage,
+        meta :{
+            guest : true,
+        }
     },
     {
         path: '/register',
         name: 'register',
         component: RegisterPage,
+        meta :{
+            guest : true,
+        }
+    },
+    {
+        path: '/chat',
+        name: 'chat',
+        component:Chat ,
+       
     },
     {
         path: '/:notFound(.*)',
