@@ -20,14 +20,30 @@ export const useAuthStore = defineStore('authStore',() => {
       
         try {
             await login(credentials).then(response => {
+
                 const token = response.data.access_token;
+                if (!token ) {
+                    throw new Error('Invalid credentials');
+                }
                 localStorage.setItem('token', token)});
             await fetchUser();
+            return response.data;
             errors.value = {};
           } catch (error) {
-            if (error.response && error.response.status === 422) {
-              errors.value = error.response.data.errors;
+            if (error.response) {
+                // Xử lý lỗi từ API, ví dụ 422 Unprocessable Entity (lỗi xác thực)
+                if (error.response.status === 422) {
+                    errors.value = error.response.data.errors;
+                }
+                // Xử lý lỗi đăng nhập không đúng (401 Unauthorized)
+                else if (error.response.status === 401) {
+                    errors.value = { login: 'Invalid credentials. Please try again.' };
+                }
+            } else {
+                // Xử lý các lỗi khác (như lỗi mạng, server không phản hồi, v.v.)
+                errors.value = { general: 'An error occurred during login. Please try again later.' };
             }
+            throw error;
           }
       };
     
@@ -42,6 +58,7 @@ export const useAuthStore = defineStore('authStore',() => {
     const handleLogout = async() => {
         await logout()
         user.value = null
+        localStorage.removeItem('token');
     }
     return {
         user,

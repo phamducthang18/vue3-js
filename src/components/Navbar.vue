@@ -3,7 +3,7 @@
         <div class="container py-2">
             <a href="#" class="navbar-brand">
                 <span>Shoppe</span>
-                <strong>Smart4w2qqqqqqqqqqqq    ư</strong>
+                <strong>Smart</strong>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
