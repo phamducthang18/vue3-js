@@ -5,6 +5,7 @@ import SummaryPage from "@/pages/SummaryPage.vue";
 import NotFounfErrorPage from "@/pages/errrors/NotFounfErrorPage.vue";
 import HomePage from "@/pages/HomePage.vue";
 import Chat from "@/components/Chat.vue";
+import ProfilePage from "@/pages/ProfilePage.vue";
 
 const routes =[
     {
@@ -43,6 +44,14 @@ const routes =[
         component: RegisterPage,
         meta :{
             guest : true,
+        }
+    },
+    {
+        path: '/profile',
+        name: 'profile',
+        component: ProfilePage,
+        meta: {
+            auth: true,
         }
     },
     {

@@ -9,7 +9,7 @@ const router = createRouter({
 })
 
 router.beforeEach( async(to,from) => {
-    console.log();
+    
     
     const store = useAuthStore()
     await store.fetchUser(store)
