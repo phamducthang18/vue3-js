@@ -70,12 +70,9 @@ const toggleConfirmPasswordVisibility = () => {
 
 const handleSubmit = async () => {
     try {
-        // Thực hiện đăng ký với store hoặc API
-        // console.log('Submitted form data:', form);
+ 
         await store.handleRegister(form);
-
-        // Điều hướng đến trang sau khi đăng ký thành công
-        router.push('/home');
+        router.push('/');
     } catch (error) {
         console.error('Đăng ký thất bại:', error);
     }

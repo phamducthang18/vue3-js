@@ -1,14 +1,15 @@
 <template>
      <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
         <div class="container py-2">
-            <a href="#" class="navbar-brand">
+            
+            <a href="/" class="navbar-brand">
                 <span>Shoppe</span>
                 <strong>Smart</strong>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            <!-- <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
-            </button>
+            </button> -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav" v-if="store.isLoggedIn">
                     <li class="nav-item">
@@ -30,8 +31,12 @@
                     </template>
                     <template v-else>
                         <li class="nav-item">
+                            <router-link :to="{name : 'profile'}" class="btn btn-success ms-2">Profile</router-link>
+                        </li>
+                        <li class="nav-item">
                             <a href="#" class="btn btn-outline-secondary ms-2" @click.prevent="Logout">Logout</a>
                         </li>
+                        
                     </template>
                 </ul>
             </div>
