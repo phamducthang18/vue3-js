@@ -6,16 +6,21 @@
 </script>
 
 <template>
- <Navbar/>
+ <div class="app-container">
+  <Navbar/>
     <router-view v-slot="{ Component }">
         <transition name="fade" mode="out-in">
             <component :is="Component" />
         </transition>
     </router-view>
   <Footer/>
+ </div>
 </template>
 
 <style scoped>
+.app-container {
+    background-color: #a1c3d1;
+}
 .fade-enter-active,
 .fade-leave-active {
     transition: opacity 0.5s ease;
