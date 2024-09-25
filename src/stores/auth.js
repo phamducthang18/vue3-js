@@ -58,7 +58,16 @@ export const useAuthStore = defineStore('authStore',() => {
             password:  newUser.password
         })
         } catch (error) {
-            
+          if (error.response) {
+            if (error.response.status === 422) {
+              errors.value = error.response.data.errors;
+            } else if (error.response.status === 401) {
+              errors.value = { register: 'Invalid credentials. Please try again.' };
+            }
+          }else{
+            errors.value = { general: 'An error occurred during registration. Please try again later.' };
+          }
+          throw error;
         }
     }
 

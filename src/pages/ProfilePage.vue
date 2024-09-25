@@ -1,27 +1,38 @@
 <template>
     <main>
-        <div class="container-profile">
-            <div class="container_avatar" >
-                <img class="img_avartar" src="../assets/pngwing.com.png" alt="">
-                <img @click="changeImage" class="img_change_avatar" src="../assets/change_avatar.png" alt="">
+        <div class="container">
+            <div class="container-profile">
+                <div class="container_avatar" >
+                    <img class="img_avartar" src="../assets/pngwing.com.png" alt="">
+                    <img @click="changeImage" class="img_change_avatar" src="../assets/change_avatar.png" alt="">
+                </div>
+                <div>
+                    <h1>{{ user.name }}</h1>
+                    <p></p>
+                    <!-- <button @click="changeImage">Change Avatar</button> -->
+                </div>
             </div>
-            <div>
-                <h1>{{ user.name }}</h1>
-                <p></p>
-                <!-- <button @click="changeImage">Change Avatar</button> -->
+            <div class="container-inner">
+                <div>
+                    <ul>
+                        <li>Ưu đãi</li>
+                        <li>Cá nhân</li>
+                        <li>Địa chỉ</li>
+                    </ul>
+                </div>
+                <div>dispatch</div>
             </div>
         </div>
+        
     </main>
 </template>
 <script setup>
     // import {fetchUser} from "@/stores/auth"
     import { useAuthStore } from '@/stores/auth'; 
-
+    
     const store = useAuthStore();
-
-    const user = await store.fetchUser(store);
-    console.log("Fetched User:", user);
-
+    const user = store.user;
+ 
 </script>
 <style>
 .img_avartar {
@@ -48,5 +59,15 @@
 .container-profile{
     display: flex;
 
+}
+.container{
+    margin-top: 20px;
+}
+.container-inner{
+    margin-top: 20px;
+    display: flex;
+}
+ul{
+    list-style: none
 }
 </style>

@@ -73,13 +73,13 @@ const displayError = (errorMessage) => {
     showError.value = true;
     setTimeout(() => {
         showError.value = false;
-    }, 5000); // Ẩn lỗi sau 5 giây
+    }, 5000); 
 };
 
 // Xử lý submit
 const handleSubmit = async () => {
   try {
-    // Gọi hàm handleLogin và chờ kết quả trả về
+    
     const data = await store.handleLogin(form);
 
     // In ra kết quả trả về để kiểm tra
