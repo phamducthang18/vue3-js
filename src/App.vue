@@ -19,7 +19,7 @@
 
 <style scoped>
 .app-container {
-    background-color: #a1c3d1;
+    /* background-color: #a1c3d1; */
 }
 .fade-enter-active,
 .fade-leave-active {
