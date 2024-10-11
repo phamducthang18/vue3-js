@@ -35,7 +35,7 @@
                   Chưa có tin nhắn nào
                 </div>
                 <div class="infor_last_messages" v-else-if="userId === room.messages[0].user_id">
-                 <div> Bạn: {{ room.messages[0].content }}</div>
+                 <div class="messages_content"> Bạn: {{ room.messages[0].content }}</div>
                  <div class="time_last_message">{{  formatTime(room.messages[0].created_at)  }}</div>
                 </div>
                 <div class="infor_last_messages" v-else>
@@ -66,9 +66,19 @@
       
     
       </div>
-      <div class="body_box_chat">
+      <div class="body_box_chat" v-if="detailRoom">
+       <div v-for="message in detailRoom.messages">
+          <div v-if="message.user.id ==userId" >
+            <p class="my_message">{{ message.content}}</p>
+          </div>
+          <div v-else>
+            <p class="orther_message">{{message.user.name}}: {{ message.content}}</p>
+          </div>
+       </div>
         
-        
+     </div>
+     <div v-else>
+       <p>Chưa có tin nhắn nào.</p>
      </div>
      <div class="input_chat">
             <input
@@ -99,6 +109,7 @@ const chatStore = useChatStore();
 const authStore = useAuthStore();
 const userId = authStore.user.id;
 const userName = authStore.user.name;
+const AllMessages = ref([]);
 const newMessage = ref('');
 const onlineUsers = ref([]);
 const sending = ref(false);
@@ -143,7 +154,8 @@ const selectBoxChat =async (roomId)=>{
 const sendChatMessage = async () => {
   // console.log(room.value);
   const message = newMessage.value.trim();
-  const roomId = room.value.trim();
+  console.log();
+  const roomId = room.value;
   if (!message) return;
 
   sending.value = true; // Đánh dấu trạng thái đang gửi
@@ -170,12 +182,18 @@ onMounted(async () => {
 
   // Kiểm tra kết nối socket
   if (socket.connected) {
+    const rooms = await allRoom.value.map(room => room.id);
+    console.log(rooms);
+    
+    
+    socket.emit('joinRooms', rooms);
     console.log('Socket.IO connected!');
   } else {
     console.log('Socket.IO not connected.');
   }
 
   // Đăng ký sự kiện khi socket kết nối
+  
   socket.on('connect', () => {
     socket.emit('register', { id: userId, name: userName });
     console.log('Socket.IO registered with user ID and name!');
@@ -274,7 +292,26 @@ onBeforeUnmount(() => {
   max-height: 400px; /* Chiều cao tối đa của khu vực tin nhắn */
   overflow-y: auto; /* Cho phép cuộn theo chiều dọc */
 }
+.my_message{
+  background-color: #d5e3e1;
+  margin-right: 10px;
+  max-width: 500px;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 14px;
+  color: white;
+}
+.other_message{
+  background-color: #87c9c0;
+  margin-left: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
 .messages_content{
+  width: 250px;
+  text-overflow: ellipsis;
   flex-grow: 1;
   text-align: left;
   font-size: 14px;
