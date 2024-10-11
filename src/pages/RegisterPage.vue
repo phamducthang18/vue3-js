@@ -20,7 +20,7 @@
             <div class="input-container">
                 <div class="form-floating mb-2">
                     <input type="email" class="form-control" id="email" v-model="form.email" placeholder="name@example.com">
-                    <label for="email">Email</label>
+                    <label :style="{ color: errors.email ? 'red' : 'black' }" for="email">Email</label>
                    
                 </div>
                 <div v-if="errors.email" :class="{'text-danger': true, hidden: !showError}">
@@ -31,7 +31,7 @@
             <div class="input-container password-container">
                 <div class="form-floating input-password">
                     <input :type="isPasswordVisible ? 'text' : 'password'" class="form-control" id="password" v-model="form.password" placeholder="Password">
-                    <label for="password">Password</label>
+                    <label :style="{ color: errors.password ? 'red' : 'black' }" for="password"> Password</label>
                     <img class="img-eye" :src="isPasswordVisible ? '/src/assets/eye.png' : '/src/assets/hide.png'" @click="togglePasswordVisibility">
                 </div>
                 <div v-if="errors.password" :class="{'text-danger': true, hidden: !showError}">
@@ -43,7 +43,7 @@
             <div class="input-container password-container">
                 <div class="form-floating input-password">
                     <input :type="isConfirmPasswordVisible ? 'text' : 'password'" class="form-control" id="password_confirmation" v-model="form.password_confirmation" placeholder="Confirm Password">
-                    <label for="password_confirmation">Confirm Password</label>
+                    <label :style="{ color: errors.password_confirmation ? 'red' : 'black' }" for="password_confirmation">Confirm Password</label>
                     <img class="img-eye" :src="isConfirmPasswordVisible ? '/src/assets/eye.png' : '/src/assets/hide.png'" @click="toggleConfirmPasswordVisibility">
                 </div>
                 <div v-if="errors.password_confirmation" :class="{'text-danger': true, hidden: !showError}">
