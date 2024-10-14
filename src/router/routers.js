@@ -4,7 +4,7 @@ import RegisterPage from "@/pages/RegisterPage.vue";
 import SummaryPage from "@/pages/SummaryPage.vue";
 import NotFounfErrorPage from "@/pages/errrors/NotFounfErrorPage.vue";
 import HomePage from "@/pages/HomePage.vue";
-import Chat from "@/components/Chat.vue";
+import Chat from "@/pages/Chat.vue";
 import ProfilePage from "@/pages/ProfilePage.vue";
 
 const routes =[
