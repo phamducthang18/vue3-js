@@ -17,10 +17,10 @@ export const useChatStore = defineStore("chatStore",() => {
     const unreadMessages = computed(() => messages.value.filter((msg) =>!msg.is_read));
     const fetchRoomMessages = async(roomId) =>{
         try {
-            const { data } = await getRoomMessages(roomId);
+            const { data } = await getRoomMessages(roomId);            
             detailRoom.value = data;
-            // console.log(detailRoom.value);
-            
+            messages.value = data.messages;
+
         } catch (e) {
             error.value = "Failed to fetch messages";
             console.error(e);
@@ -52,18 +52,26 @@ export const useChatStore = defineStore("chatStore",() => {
     // };
 
     const sendChatMessage = async (messageContent) => {
-        const message =messageContent.message;
-        const socketId = messageContent.socketId;
-        const roomId = messageContent.roomId;
+        const content =messageContent.message;
+        const conversation_id = messageContent.roomId;
+        const userId = messageContent.userId;
+        const userName = messageContent.userName;
+
         if (!message) return;
-        console.log(message);
+        console.log(messageContent);
         
         sending.value = true;
         error.value = null;
-    
+        messages.value.push({
+            content: content,
+            user:{
+                id :userId,
+                name : userName,
+            }
+        }); 
         try {
-            const { data: newMessage } = await sendMessage({ message,roomId,socketId }); 
-            messages.value.push(newMessage); 
+            const { data: newMessage } = await sendMessage({ content,conversation_id }); 
+           
         } catch (err) {
             // Xử lý lỗi chi tiết hơn
             error.value = err.response?.data?.message || "Failed to send message.";

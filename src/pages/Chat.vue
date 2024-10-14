@@ -35,7 +35,7 @@
                   Chưa có tin nhắn nào
                 </div>
                 <div class="infor_last_messages" v-else-if="userId === room.messages[0].user_id">
-                 <div> Bạn: {{ room.messages[0].content }}</div>
+                 <div class="messages_content"> Bạn: {{ room.messages[0].content }}</div>
                  <div class="time_last_message">{{  formatTime(room.messages[0].created_at)  }}</div>
                 </div>
                 <div class="infor_last_messages" v-else>
@@ -66,17 +66,28 @@
       
     
       </div>
-      <div class="body_box_chat">
+      <div class="body_box_chat" v-if="detailRoom" ref="chatBody">
+       <div v-for="message in AllMessages">
+          <div v-if="message.user.id ==userId"  class="container_my_message">
+            <p class="my_message">{{ message.content}}</p>
+          </div>
+          <div v-else class="container_orther_message">
+            <p class="orther_message">{{message.user.name}}: {{ message.content}}</p>
+          </div>
+       </div>
         
-        
+     </div>
+     <div v-else>
+       <p>Chưa có tin nhắn nào.</p>
      </div>
      <div class="input_chat">
             <input
             v-model="newMessage"
             @keyup.enter="sendChatMessage"
             placeholder="Type a message"
-            :disabled="sending"
+            :disabled="sending" 
             />
+            <img src="../assets/send-icon.svg" alt="">
           </div>
       <!-- <div class="container_chat_messages"></div>
       <div v-for="(msg, index) in chatStore.messages" :key="index">
@@ -89,7 +100,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
+import { ref, onMounted, onBeforeUnmount,nextTick, computed } from 'vue';
 import { useChatStore } from "@/stores/chat";
 import { useAuthStore } from "@/stores/auth";
 import socket from '../socket';
@@ -99,16 +110,30 @@ const chatStore = useChatStore();
 const authStore = useAuthStore();
 const userId = authStore.user.id;
 const userName = authStore.user.name;
+// const AllMessages = ref([]);
 const newMessage = ref('');
 const onlineUsers = ref([]);
-const sending = ref(false);
+// const sending = ref(false);
 const room = ref(null);
 
 
+const sending = computed(() => chatStore.sending);
+const makeid =(length)=>{
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    let counter = 0;
+    while (counter < length) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+      counter += 1;
+    }
+    return result;
+}
+const ramdomString  = makeid(5);
 // Lấy danh sách phòng chat từ chatStore
 const allRoom = computed(() => chatStore.allRoom);
 const detailRoom = computed(() => chatStore.detailRoom );
-
+const AllMessages = computed(() => chatStore.allMessages);
 // console.log(detailRoom.value);
 
 const formatTime = (timestamp) => {
@@ -132,9 +157,21 @@ const formatTime = (timestamp) => {
     return `${days} ngày trước`;
   }
 };
+const scrollToBottom = () => {
+  nextTick(() => {
+    const chatBody = document.querySelector('.body_box_chat');
+    console.log(123123);
+    
+    if (chatBody) {
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+  });
+};
 const selectBoxChat =async (roomId)=>{
   await chatStore.fetchRoomMessages(roomId)
   
+  scrollToBottom();
+  room.value = roomId;
   
   // const detailRoom = computed(()=>chatStore.detailRoom);
   console.log(chatStore.detailRoom);
@@ -142,40 +179,64 @@ const selectBoxChat =async (roomId)=>{
 }
 const sendChatMessage = async () => {
   // console.log(room.value);
-  const message = newMessage.value.trim();
-  const roomId = room.value.trim();
-  if (!message) return;
 
-  sending.value = true; // Đánh dấu trạng thái đang gửi
-  newMessage.value = ''; // Reset giá trị input
+  const message = newMessage.value.trim();
+  const roomId = room.value;
+  
+  socket.emit('sendMessage', { roomId, message,userId,userName, ramdomString });
+  if (!message) return;
+console.log(allRoom.value);
+
+  sending.value = true; 
+  newMessage.value = ''; 
 
   // Gửi tin nhắn cùng với socket ID
   const socketId = socket.id; // Lấy socket ID hiện tại
-  await chatStore.sendChatMessage({ message,roomId, socketId }); // Gọi hàm gửi tin nhắn từ chatStore
-
-  sending.value = false; // Kết thúc trạng thái gửi
+  console.log('sending 1',sending.value);
+  await chatStore.sendChatMessage({ message,roomId,userId,userName}); 
+  console.log('sending',sending.value);
   
   
 };
 
 onMounted(async () => {
-  console.log('Component mounted');
+  console.log('Component mounted 12');
   await chatStore.fetchAllRoomChat();
-  if(allRoom){
+  if(allRoom && allRoom.value.length > 0){
     await chatStore.fetchRoomMessages(allRoom.value[0].id);
-    // console.log();
     room.value =allRoom.value[0].id;
-    
+    scrollToBottom();
   }
 
+  
   // Kiểm tra kết nối socket
   if (socket.connected) {
+    const rooms = await allRoom.value.map(room => room.id);
+    console.log(rooms);
+    socket.emit('joinRooms', rooms);
     console.log('Socket.IO connected!');
   } else {
     console.log('Socket.IO not connected.');
   }
 
   // Đăng ký sự kiện khi socket kết nối
+  socket.on('receiveMessage', (data) => {
+   
+   
+    
+    if(ramdomString && data.ramdomString != ramdomString){
+      
+      chatStore.messages.push({
+      user: {
+        id: data.userId,
+        name: data.userName,
+      },
+      content: data.message,
+    });
+    }
+    scrollToBottom();
+});
+
   socket.on('connect', () => {
     socket.emit('register', { id: userId, name: userName });
     console.log('Socket.IO registered with user ID and name!');
@@ -274,7 +335,37 @@ onBeforeUnmount(() => {
   max-height: 400px; /* Chiều cao tối đa của khu vực tin nhắn */
   overflow-y: auto; /* Cho phép cuộn theo chiều dọc */
 }
+.container_my_message{
+  display: flex;
+  justify-content: flex-end;
+}
+.my_message{
+  background-color: #d5e3e1;
+  
+  margin-right: 10px;
+  max-width: 500px;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 14px;
+  color: white;
+}
+.container_orther_message{
+  display: flex;
+  justify-content: flex-start;
+}
+.orther_message{
+  background-color: #87c9c0;
+  
+  max-width: 500px;
+  margin-left: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
 .messages_content{
+  width: 250px;
+  text-overflow: ellipsis;
   flex-grow: 1;
   text-align: left;
   font-size: 14px;
@@ -354,6 +445,7 @@ onBeforeUnmount(() => {
   flex-grow: 1;
   font-size: 14px;
 }.input_chat{
+  display: flex;
   width: 100%;
   padding: 10px;
   border-radius: 25px;
@@ -370,10 +462,18 @@ onBeforeUnmount(() => {
   flex-grow: 1;
   font-size: 14px;
 }
-.body_box_chat{
+.input_chat img{
+  width: 25px;
+  height: 25px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+.body_box_chat {
+  overflow-y: auto; 
+  max-height: 521px;  
   flex: 1;
   margin-top: 80px;
-  height: 100%;
   width: 100%;
 }
+
 </style>
