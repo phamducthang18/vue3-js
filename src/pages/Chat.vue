@@ -31,18 +31,18 @@
               <div class="inner_chat">
                 <strong>{{ room.name }}</strong>
                <div class="">
-                <div v-if="room.messages.length === 0">
+                <div v-if="!room.latest_message">
                   Chưa có tin nhắn nào
                 </div>
-                <div class="infor_last_messages" v-else-if="userId === room.messages[0].user_id">
-                 <div class="messages_content"> Bạn: {{ room.messages[0].content }}</div>
-                 <div class="time_last_message">{{  formatTime(room.messages[0].created_at)  }}</div>
+                <div class="infor_last_messages" v-else-if="userId === room.latest_message.user_id">
+                 <div class="messages_content"> Bạn: {{ room.latest_message.content }}</div>
+                 <div class="time_last_message">{{  formatTime(room.latest_message.created_at)  }}</div>
                 </div>
                 <div class="infor_last_messages" v-else>
                   <div class="messages_content">
-                    {{ room.messages[0].user.name }}: {{ room.messages[0].content }}
+                    {{ room.latest_message.user.name }}: {{ room.latest_message.content }}
                   </div>
-                  <div class="time_last_message">{{  formatTime(room.messages[0].created_at)  }}</div>
+                  <div class="time_last_message">{{  formatTime(room.latest_message.created_at)  }}</div>
                 </div>   
                 
                </div>             <!-- <p v-if="userId == room.messages[0].user_id" >bạn : </p> -->
@@ -115,7 +115,7 @@ const newMessage = ref('');
 const onlineUsers = ref([]);
 // const sending = ref(false);
 const room = ref(null);
-
+let updateTimeInterval;
 
 const sending = computed(() => chatStore.sending);
 const makeid =(length)=>{
@@ -156,6 +156,14 @@ const formatTime = (timestamp) => {
   } else {
     return `${days} ngày trước`;
   }
+};
+const updateTimes = () => {
+  // Thay thế hàm formatTime cho các tin nhắn hiện tại
+  const chatMessages = document.querySelectorAll('.time_last_message');
+  chatMessages.forEach(messageElement => {
+    const timestamp = messageElement.getAttribute('data-timestamp');
+    messageElement.textContent = formatTime(Number(timestamp));
+  });
 };
 const scrollToBottom = () => {
   nextTick(() => {
@@ -233,6 +241,27 @@ onMounted(async () => {
       },
       content: data.message,
     });
+    allRoom.value.forEach((room, index) => {
+    if (room.id === data.roomId) {
+        // Cập nhật nội dung của phòng chat
+        room.latest_message = {
+            content: data.message,
+            created_at: Date.now(),
+            user: {
+                id: data.userId,
+                name: data.userName,
+            },
+            user_id: data.userId,
+        };
+
+        // Loại bỏ phần tử vừa được cập nhật khỏi vị trí cũ
+        const updatedRoom = allRoom.value.splice(index, 1)[0];
+
+        // Đẩy phòng chat vừa được cập nhật lên đầu mảng
+        allRoom.value.unshift(updatedRoom);
+    }
+});
+
     }
     scrollToBottom();
 });
@@ -247,19 +276,13 @@ onMounted(async () => {
     onlineUsers.value = newOnlineUsers;
     console.log('Updated online users:', onlineUsers.value);
   });
+  updateTimeInterval = setInterval(updateTimes, 60000);
 
-  // Lắng nghe sự kiện nhận tin nhắn mới
-  socket.on('chat:App\\Events\\MessageSent', (data) => {
-    console.log('Received message:', data.message);
-    chatStore.messages.push({
-      user: data.user,
-      message: data.message,
-    });
-  });
 });
 
 onBeforeUnmount(() => {
-  socket.off('chat:App\\Events\\MessageSent'); // Gỡ bỏ sự kiện khi component unmount
+  socket.off('receiveMessage'); 
+  
 });
 </script>
 

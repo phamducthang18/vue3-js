@@ -69,6 +69,26 @@ export const useChatStore = defineStore("chatStore",() => {
                 name : userName,
             }
         }); 
+        //change conversation in allRoom 
+        allRoom.value.forEach((room, index) => {
+
+            if(room.id === conversation_id){
+                room.latest_message ={
+                    content: content,
+                    created_at: Date.now(),
+                    user:{
+                        id : userId,
+                        name : userName,
+                    },
+                    user_id: userId,
+                }
+                const updatedRoom = allRoom.value.splice(index, 1)[0];
+
+        // Đẩy phòng chat vừa được cập nhật lên đầu mảng
+            allRoom.value.unshift(updatedRoom);
+            }
+        });
+        
         try {
             const { data: newMessage } = await sendMessage({ content,conversation_id }); 
            
