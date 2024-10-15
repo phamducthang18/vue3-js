@@ -130,6 +130,7 @@ const lastScrollTop = ref(0);
 const limitMessage = ref(10);
 const offsetMessage = ref(0);
 const handleSearch =(message)=>{
+  console.log(message);
   
 }
 // const sending = ref(false);
