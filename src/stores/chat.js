@@ -15,12 +15,17 @@ export const useChatStore = defineStore("chatStore",() => {
 
     const allMessages = computed(() =>messages.value);
     const unreadMessages = computed(() => messages.value.filter((msg) =>!msg.is_read));
-    const fetchRoomMessages = async(roomId) =>{
+    const fetchRoomMessages = async(roomId,limit,offset) =>{
         try {
-            const { data } = await getRoomMessages(roomId);            
-            detailRoom.value = data;
-            messages.value = data.messages;
-
+            const { data } = await getRoomMessages(roomId,limit,offset);            
+            
+            if(offset !=0){
+                messages.value = [...data.messages, ...messages.value];
+                console.log('Messages after push:',messages.value);
+            }else{
+                detailRoom.value = data;
+                messages.value = data.messages;
+            }
         } catch (e) {
             error.value = "Failed to fetch messages";
             console.error(e);

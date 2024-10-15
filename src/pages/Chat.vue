@@ -14,10 +14,9 @@
         </div>
       </div>
       <div>
-        <div class="search">
-          <img class="" src="../assets/search.png" alt="" />
-          <input type="text" placeholder="Tìm kiếm" />
-        </div>
+        <Search 
+        @search="handleSearch"
+        :placeholder="Placeholder"/>
       </div>
 
       <!-- Hiển thị danh sách phòng chat -->
@@ -36,13 +35,13 @@
                 </div>
                 <div class="infor_last_messages" v-else-if="userId === room.latest_message.user_id">
                  <div class="messages_content"> Bạn: {{ room.latest_message.content }}</div>
-                 <div class="time_last_message">{{  formatTime(room.latest_message.created_at)  }}</div>
+                 <div class="time_last_message" :data-timestamp="room.latest_message.created_at">{{  formatTime(room.latest_message.created_at)  }}</div>
                 </div>
                 <div class="infor_last_messages" v-else>
                   <div class="messages_content">
                     {{ room.latest_message.user.name }}: {{ room.latest_message.content }}
                   </div>
-                  <div class="time_last_message">{{  formatTime(room.latest_message.created_at)  }}</div>
+                  <div class="time_last_message" :data-timestamp="room.latest_message.created_at">{{  formatTime(room.latest_message.created_at)  }}</div>
                 </div>   
                 
                </div>             <!-- <p v-if="userId == room.messages[0].user_id" >bạn : </p> -->
@@ -66,20 +65,33 @@
       
     
       </div>
-      <div class="body_box_chat" v-if="detailRoom" ref="chatBody">
-       <div v-for="message in AllMessages">
-          <div v-if="message.user.id ==userId"  class="container_my_message">
-            <p class="my_message">{{ message.content}}</p>
+      <div class="body_box_chat" v-if="detailRoom" ref="chatBody" @scroll="handleScroll">
+        <div v-for="message in AllMessages" :key="message.id">
+  
+          <div v-if="message.user.id == userId" class="container_my_message">
+            <p class="my_message">{{ message.content }}</p>
           </div>
+   
+          <div v-else-if="detailRoom.conversation.type == 'private'" class="container_orther_message">
+            <p class="orther_message">
+                {{ message.content }}
+            </p>
+            
+          </div>
+  
           <div v-else class="container_orther_message">
-            <p class="orther_message">{{message.user.name}}: {{ message.content}}</p>
+            <p class="name_orther_message">{{ message.user.name }} </p>
+            <span class="orther_message">
+                {{ message.content }}
+            </span>
           </div>
-       </div>
-        
-     </div>
-     <div v-else>
-       <p>Chưa có tin nhắn nào.</p>
-     </div>
+        </div>
+      </div>
+      
+      <div v-else>
+        <p>Chưa có tin nhắn nào.</p>
+      </div>
+      
      <div class="input_chat">
             <input
             v-model="newMessage"
@@ -103,6 +115,7 @@
 import { ref, onMounted, onBeforeUnmount,nextTick, computed } from 'vue';
 import { useChatStore } from "@/stores/chat";
 import { useAuthStore } from "@/stores/auth";
+import Search from "../components/input/Search.vue";
 import socket from '../socket';
 // import {formatTime} from '../utils.js';
 
@@ -110,9 +123,16 @@ const chatStore = useChatStore();
 const authStore = useAuthStore();
 const userId = authStore.user.id;
 const userName = authStore.user.name;
-// const AllMessages = ref([]);
+const Placeholder = ref('Tìm kiếm cuộc trò chuyện');
 const newMessage = ref('');
 const onlineUsers = ref([]);
+const lastScrollTop = ref(0);
+const limitMessage = ref(10);
+const offsetMessage = ref(0);
+const handleSearch =(message)=>{
+  console.log(message);
+  
+}
 // const sending = ref(false);
 const room = ref(null);
 let updateTimeInterval;
@@ -168,7 +188,6 @@ const updateTimes = () => {
 const scrollToBottom = () => {
   nextTick(() => {
     const chatBody = document.querySelector('.body_box_chat');
-    console.log(123123);
     
     if (chatBody) {
       chatBody.scrollTop = chatBody.scrollHeight;
@@ -176,8 +195,8 @@ const scrollToBottom = () => {
   });
 };
 const selectBoxChat =async (roomId)=>{
-  await chatStore.fetchRoomMessages(roomId)
-  
+  offsetMessage.value = 0;
+  await chatStore.fetchRoomMessages(roomId,limitMessage.value,offsetMessage.value)
   scrollToBottom();
   room.value = roomId;
   
@@ -185,6 +204,22 @@ const selectBoxChat =async (roomId)=>{
   console.log(chatStore.detailRoom);
   
 }
+const handleScroll = (event) => {
+  const chatBody = event.target;
+  const currentScrollTop = chatBody.scrollTop;
+
+  if (currentScrollTop === 0) {
+    offsetMessage.value = offsetMessage.value + 10;
+     chatStore.fetchRoomMessages(room.value,limitMessage.value,offsetMessage.value)
+
+  }else if (currentScrollTop > lastScrollTop.value) {
+    console.log('Cuộn xuống');
+  } else if (currentScrollTop < lastScrollTop.value) {
+    console.log('Cuộn lên');
+  }
+
+  lastScrollTop.value = currentScrollTop; 
+};
 const sendChatMessage = async () => {
   // console.log(room.value);
 
@@ -211,7 +246,7 @@ onMounted(async () => {
   console.log('Component mounted 12');
   await chatStore.fetchAllRoomChat();
   if(allRoom && allRoom.value.length > 0){
-    await chatStore.fetchRoomMessages(allRoom.value[0].id);
+    await chatStore.fetchRoomMessages(allRoom.value[0].id,limitMessage.value,offsetMessage.value);
     room.value =allRoom.value[0].id;
     scrollToBottom();
   }
@@ -374,11 +409,26 @@ onBeforeUnmount(() => {
 }
 .container_orther_message{
   display: flex;
+  flex-direction: column;
   justify-content: flex-start;
+}
+.name_orther_message{
+  font-size: 14px;
+  font-weight: lighter;
+  margin-left: 1rem;
+  margin-bottom: 0;
+}
+.format_time_orther_messeage{
+  font-size: 12px;
+  color: #aaa;
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  margin-right: 1rem;
 }
 .orther_message{
   background-color: #87c9c0;
-  
+  width: fit-content;
   max-width: 500px;
   margin-left: 10px;
   padding: 10px;
@@ -447,27 +497,10 @@ onBeforeUnmount(() => {
   margin: 5px;
   cursor: pointer;
 }
-.search {
-  display: flex;
-  align-items: center;
-  border: 1px solid #ccc;
-  margin: 20px;
-  border-radius: 25px;
-  padding: 5px 10px;
-  width: 90%;
-}
-.search img {
-  width: 20px;
-  height: 20px;
-  margin-right: 10px;
-}
-.search input {
-  width: 100%;
-  outline: none;
-  border: none;
-  flex-grow: 1;
-  font-size: 14px;
-}.input_chat{
+
+
+
+.input_chat{
   display: flex;
   width: 100%;
   padding: 10px;
