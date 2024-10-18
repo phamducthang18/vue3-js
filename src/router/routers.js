@@ -6,6 +6,7 @@ import NotFounfErrorPage from "@/pages/errrors/NotFounfErrorPage.vue";
 import HomePage from "@/pages/HomePage.vue";
 import Chat from "@/pages/Chat.vue";
 import ProfilePage from "@/pages/ProfilePage.vue";
+import Game from "@/pages/Game.vue";
 
 const routes =[
     {
@@ -59,6 +60,14 @@ const routes =[
         name: 'chat',
         component:Chat ,
        
+    },
+    {
+        path: '/game',
+        name: 'game',
+        component: Game,
+        meta: {
+            auth: true,
+        }
     },
     {
         path: '/:notFound(.*)',
