@@ -7,4 +7,4 @@ export const sendMessage = (message) => api.post("/api/messages", message);
 export const getAllRoomChat = () => api.get("/api/conversation");
 
 
-export const getRoomMessages = (roomId) => api.get(`/api/conversation/${roomId}`);
+export const getRoomMessages = (roomId,limit,offset) => api.get(`/api/conversation/${roomId}?limit=${limit}&offset=${offset}`);

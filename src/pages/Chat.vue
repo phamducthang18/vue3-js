@@ -210,11 +210,22 @@ const handleScroll = (event) => {
 
   if (currentScrollTop === 0) {
     offsetMessage.value = offsetMessage.value + 10;
-     chatStore.fetchRoomMessages(room.value,limitMessage.value,offsetMessage.value)
-
+    chatStore.fetchRoomMessages(room.value,limitMessage.value,offsetMessage.value)
+    //check allMessages changed
+    // if (chatStore.allMessages.length < chatStore.detailRoom.conversation.messages.length) {
+      
+    // }
+    chatBody.scrollTop =50;
+    
+    
+    
   }else if (currentScrollTop > lastScrollTop.value) {
+    console.log(lastScrollTop.value);
+    
     console.log('Cuộn xuống');
   } else if (currentScrollTop < lastScrollTop.value) {
+    console.log(lastScrollTop.value);
+
     console.log('Cuộn lên');
   }
 
